@@ -29,7 +29,7 @@ Het installeren van de nodige packages kan met het volgende commando:
 
 ### SQL importeren
 
-Open MySQLWorkbench en importeer het SQL-bestand. In het bestand staat ook onze standaarduser `root_fswd` met als standaardpaswoord `root_fswd`.
+Open MySQLWorkbench en importeer het SQL-bestand. In het bestand staat ook onze standaarduser `student` met als standaardpaswoord `W8w00rd`.
 
 ### Config voor de database aanpassen
 
