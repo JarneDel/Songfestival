@@ -24,7 +24,7 @@ let htmlCount,
   htmlyoutube,
   htmlForm;
 
-let StudentRatingID, aantalInzendingen;
+let StudentRatingID, aantalInzendingen, aantalRatings;
 
 let hoe = `Deze server is in elkaar gestoken in een weekendje, met behulp van de lamp methode (linux, apache, mysql & python)
 De webserver (frontend server) draait op apache, en is geschreven met html, css en js. 
@@ -47,7 +47,7 @@ const callbackError = function (jsonObject) {
 
 // #region *** Student ***
 const init_student = function () {
-  console.info("Hey fellow nerd, ge hebt de console gevonden, indien u wilt weten hoe deze server in elkaar zit, typ dan 'hoe' in de console, als je wil voorlopen, typ dan voorlopen in de console")
+  console.info("Hey fellow nerd, ge hebt de console gevonden, indien u wilt weten hoe deze server in elkaar zit, typ dan 'hoe' in de console, als je wil voorlopen, typ dan voorlopen in de console De repo is opensource, ga naar https://github.com/JarneDel/Songfestival om de bronbestanden te bekijken")
   listenToSocketstudent();
 };
 
@@ -324,21 +324,25 @@ const listenToSocket = function () {
     htmlCount.innerHTML = `<p>Aantal inzendingen: ${msg['aantal']}</p>`;
   });
   socketio.on('B2F_rating_count', function (msg) {
+    aantalRatings = msg['aantal']
     HTMLaantalRatings.innerHTML = `<p>Aantal beoordelingen: ${msg['aantal']}</p>`;
   });
 };
 
 const ListenToKlaarBtn = function () {
   htmlKlaar.addEventListener('click', function () {
-    socketio.emit('F2B_iedereen_klaar');
-    this.innerHTML = '';
-    htmlCount.innerHTML = '';
-    htmlCount.classList.add('c-is-hidden');
-    getEersteID();
-    HTMLaantalRatings.classList.remove('c-is-hidden');
-    HTMLaantalRatings.innerHTML = `<p>Aantal beoordelingen: 0</p>`;
-    // getLiedjes();
-  });
+    if (aantalInzendingen) {
+      socketio.emit('F2B_iedereen_klaar');
+      this.innerHTML = '';
+      htmlCount.innerHTML = '';
+      htmlCount.classList.add('c-is-hidden');
+      getEersteID();
+      HTMLaantalRatings.classList.remove('c-is-hidden');
+      HTMLaantalRatings.innerHTML = `<p>Aantal beoordelingen: 0</p>`;
+      // getLiedjes();
+    }
+  })
+    ;
 };
 
 const listenToNext = function () {
@@ -352,17 +356,23 @@ const listenToNext = function () {
 
 const listenToResult = function () {
   htmlGetResult.addEventListener('click', function () {
-    htmlGetResult.classList.add('c-is-hidden');
-    htmlnext.classList.remove('c-is-hidden');
-    const id = this.dataset.LiedjeID;
-    const url = backend + `/ratings/${id}`;
-    handleData(url, showRating, callbackError);
-    socketio.emit('F2B_result_shown');
+    if (aantalRatings) {
+      htmlGetResult.classList.add('c-is-hidden');
+      htmlnext.classList.remove('c-is-hidden');
+      const id = this.dataset.LiedjeID;
+      const url = backend + `/ratings/${id}`;
+      handleData(url, showRating, callbackError);
+      socketio.emit('F2B_result_shown');
+    }
   });
 };
 
 const listenToReset = function () {
   document.querySelector('.js-restart').addEventListener('click', function () {
+    const url = backend + '/liedjes/';
+    handleData(url, callbackDelete, callbackError, 'DELETE');
+  });
+  document.querySelector('.js-restart2').addEventListener('click', function () {
     const url = backend + '/liedjes/';
     handleData(url, callbackDelete, callbackError, 'DELETE');
   });
@@ -391,9 +401,11 @@ const callbackEersteItem = function (jsonElement) {
 };
 
 const callbackDelete = function (jsonElement) {
+  console.log("Delete")
   document.querySelector('.js-summary').classList.add('c-is-hidden');
   document.querySelector('.js-instructies').classList.remove('c-is-hidden');
   aantalInzendingen = 0;
+  document.location.reload(true);
 };
 // #endregion
 
