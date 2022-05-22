@@ -26,6 +26,13 @@ let htmlCount,
 
 let StudentRatingID, aantalInzendingen;
 
+let hoe = `Deze server is in elkaar gestoken in een weekendje, met behulp van de lamp methode (linux, apache, mysql & python)
+De webserver (frontend server) draait op apache, en is geschreven met html, css en js. 
+De backend server is geschreven in python, met behulp van flask & socketio (requests & real time communicate)
+verder is de database een MySql database op een mariadb server. Alles draait op een debian vm.
+In totaal heeft dit project een 16-tal uren ingenomen, en zo'n 2000 lijntjes code`
+let voorlopen = `Ah, je wil voorlopen zie ik. kan op twee manieren, je kan alle ingezonden liedjes zien: surf naar ${window.location.origin}:5000/api/v1/liedjes/ .
+ Als je al wil raten (meer advanced), kan dit door een POST request te doen naar in de console 'socketio.emit('F2BRate', { rating: sliderVal, id: id }) te doen. Rate is een waarde tussen 0-5 en id is het id die je kan zien in de ingezonden liedes, veel succes!'`
 // #endregion
 
 // #region errorhandeling
@@ -40,12 +47,11 @@ const callbackError = function (jsonObject) {
 
 // #region *** Student ***
 const init_student = function () {
-  console.log('input');
+  console.info("Hey fellow nerd, ge hebt de console gevonden, indien u wilt weten hoe deze server in elkaar zit, typ dan 'hoe' in de console, als je wil voorlopen, typ dan voorlopen in de console")
   listenToSocketstudent();
 };
 
 const ShowWait = function (jsonElement) {
-  console.log(jsonElement);
   if (jsonElement.LiedjeID) {
     document.querySelector('.js-student').classList.add('c-is-hidden');
     document.querySelector('.js-wait').classList.remove('c-is-hidden');
@@ -88,7 +94,10 @@ const listenToSocketstudent = function () {
       htmlArtiest = document.querySelector('.js-artiest');
       htmltitel = document.querySelector('.js-titel');
       htmlForm = document.querySelector('.js-form');
-      listenToVersturen();
+
+      const url = backend + '/rating/refesh/'
+      handleData(url, callbackRatingOnRefesh, callbackError)
+
     } else if (msg.status == 2) {
       document
         .querySelector('.js-wachten-op-start')
@@ -103,7 +112,6 @@ const listenToSocketstudent = function () {
   });
 
   socketio.on('B2F_Rate', function (lied) {
-    console.log('raten maar');
     htmlForm.classList.remove('c-is-hidden');
     document.querySelector('.js-wait-next').classList.add('c-is-hidden');
     const Liedjeid = lied.liedjeID;
@@ -174,7 +182,6 @@ const listenToVersturen = function () {
 const listenTosubmitBtn = function () {
   let btn = document.querySelector('.js-submit-btn');
   btn.addEventListener('click', function () {
-    console.log('submit');
     const Artiest = document.querySelector('.js-inputliedje__artiest').value;
     const Titel = document.querySelector('.js-inputliedje__titel').value;
     const link = document.querySelector('.js-inputliedje__yt_link').value;
@@ -205,13 +212,28 @@ const listenTosubmitBtn = function () {
     }
   });
 };
-
+const callbackRatingOnRefesh = function (lied) {
+  htmlForm.classList.remove('c-is-hidden');
+  document.querySelector('.js-wait-next').classList.add('c-is-hidden');
+  const Liedjeid = lied.liedjeID;
+  const Titel = lied.Titel;
+  const Artiest = lied.Artiest;
+  const slider = document.querySelector('.js-rateslider');
+  slider.innerHTML = `<div class="js-slidecontainer">
+      <input type="range" min="0" max="5" value="2.5" step = "0.1" class="js-slider" id="myRange">
+    </div>`;
+  const htmlSubmit = document.querySelector('.js-submit');
+  htmlArtiest.innerHTML = `<p>Artiest: ${Artiest}</p>`;
+  htmltitel.innerHTML = `<p>Titel: ${Titel}</p>`;
+  htmlSubmit.innerHTML = 'Versturen';
+  htmlSubmit.dataset.liedID = Liedjeid;
+  listenToVersturen();
+}
 // #endregion
 
 // #region *** Teacher ***
 
 const init_teacher = function () {
-  console.log('dashboard');
   listenToSocket();
   htmlCount = document.querySelector('.js-count');
   htmlKlaar = document.querySelector('.js-klaar');
@@ -223,11 +245,12 @@ const init_teacher = function () {
   htmlArtiest = document.querySelector('.js-artiest');
   htmlyoutube = document.querySelector('.js-youtube');
   start();
+  listenToReset();
 };
 
 const start = function () {
   document.querySelector('.js-url').innerHTML = `
-    Surf naar ${window.location.origin}/front/
+    Surf naar ${window.location.origin}
   `;
   document.querySelector('.js-start').addEventListener('click', function () {
     socketio.emit('F2B_start');
@@ -239,7 +262,6 @@ const start = function () {
 };
 
 const showRating = function (jsonObject) {
-  console.log(jsonObject.rating.aantal);
   HTMLAverage.innerHTML = `<p>Beoordeeling: ${jsonObject.rating.aantal.toFixed(
     2
   )} ⭐</p>`;
@@ -247,12 +269,10 @@ const showRating = function (jsonObject) {
 };
 
 const showNextItem = function (jsonLiedje) {
-  console.log(jsonLiedje);
   if (jsonLiedje.liedje == null) {
     getSummary();
     socketio.emit('F2B_start_summary');
   } else if (jsonLiedje.liedje) {
-    console.log(jsonLiedje);
     const url = jsonLiedje.liedje.URL;
     if (url != 'NONE') {
       const regex = re.exec(url);
@@ -280,11 +300,9 @@ const showSummary = function (jsonLiedjes) {
     '<th>Plaats</th><th>Artiest</th><th>Titel</th><th>Beoordeling</th>';
   let i = 1;
   for (let liedje of liedjes) {
-    console.log(liedje);
 
-    html += `<tr class="js-summary__list--item data-liedje_id = ${
-      liedje.idliedjes
-    }">
+    html += `<tr class="js-summary__list--item data-liedje_id = ${liedje.idliedjes
+      }">
                 <td class="c-placement">${i}</td>
                 <td class="c-artiest">${liedje.artiest}</td>
                 <td class="c-titel">${liedje.titel}</td>
@@ -302,12 +320,10 @@ const listenToSocket = function () {
     socketio.emit('F2BAuth', { type: 'Teacher' });
   });
   socketio.on('B2F_count', function (msg) {
-    console.log('Nieuwe count', msg['aantal']);
     aantalInzendingen = msg['aantal'];
     htmlCount.innerHTML = `<p>Aantal inzendingen: ${msg['aantal']}</p>`;
   });
   socketio.on('B2F_rating_count', function (msg) {
-    console.log(msg);
     HTMLaantalRatings.innerHTML = `<p>Aantal beoordelingen: ${msg['aantal']}</p>`;
   });
 };
@@ -327,7 +343,6 @@ const ListenToKlaarBtn = function () {
 
 const listenToNext = function () {
   htmlnext.addEventListener('click', function () {
-    console.log('next');
     htmlnext.classList.add('c-is-hidden');
     HTMLAverage.classList.add('c-is-hidden');
     HTMLaantalRatings.innerHTML = `<p>Aantal beoordelingen: 0</p>`;
@@ -361,7 +376,6 @@ const getLiedje = function () {
   handleData(url, showNextItem, callbackError);
 };
 const getSummary = function () {
-  console.log('ShowSummary');
   const url = backend + `/liedjes/summary/`;
   handleData(url, showSummary, callbackError);
 };
@@ -371,7 +385,7 @@ const getLiedjes = function () {
 };
 
 const callbackEersteItem = function (jsonElement) {
-  currentliedje = jsonElement.liedjeID.idLiedjes;
+  currentliedje = jsonElement.liedjeID.idLiedjes - 1;
   listenToResult();
   getLiedje();
 };
@@ -385,7 +399,6 @@ const callbackDelete = function (jsonElement) {
 
 // #region ***  Init / DOMContentLoaded                  ***********
 const init = function () {
-  console.log('Init complete');
   if (document.querySelector('.js-student')) {
     init_student();
   } else if (document.querySelector('.js-dashboard')) {

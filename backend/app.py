@@ -16,6 +16,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 
 status = -1
+rateID = 0
 endpoint = "/api/v1"
 
 
@@ -100,6 +101,18 @@ def get_summary():
         return jsonify(liedjes=data), 200
 
 
+@app.route(endpoint + "/rating/refesh/", methods=["GET"])
+def rating_refeshed():
+    global rateID
+    if request.method == "GET":
+        liedjeID = rateID
+        print(liedjeID)
+        data = DataRepository.get_liedje(liedjeID)
+        print(data)
+        val = {"liedjeID": liedjeID, "Titel": data["Titel"], "Artiest": data["Artiest"]}
+        return val, 200
+
+
 # socketio events
 @socketio.on("connect")
 def new_connection():
@@ -126,9 +139,10 @@ def iedereen_klaar():
 
 @socketio.on("F2B_rate")
 def rate(id):
-    global status
+    global status, rateID
     status = 1
     liedjeID = id["liedjeID"]
+    rateID = liedjeID
     print("Er mag nu gerate worden")
     data = DataRepository.get_liedje(liedjeID)
     emit(
@@ -150,7 +164,7 @@ def summary():
     global status
     print("Summary")
     status = 2
-    emit("B2F_finished")
+    emit("B2F_finished", broadcast=True)
 
 
 @socketio.on("F2B_start")
