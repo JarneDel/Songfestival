@@ -142,11 +142,12 @@ const checkpagina = function (status) {
     document.querySelector('.js-wait').classList.add('c-is-hidden');
     document.querySelector('.js-rate').classList.remove('c-is-hidden');
     htmlArtiest = document.querySelector('.js-artiest');
+
     htmltitel = document.querySelector('.js-titel');
     htmlForm = document.querySelector('.js-form');
-
-    const url = backend + '/rating/refesh/'
-    handleData(url, callbackRatingOnRefesh, callbackError)
+    getStatusRating();
+    // const url = backend + '/rating/refesh/'
+    // handleData(url, callbackRatingOnRefesh, callbackError)
 
   } else if (status == 2) {
     document
