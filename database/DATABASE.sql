@@ -18,6 +18,15 @@
 --
 -- Table structure for table `liedjes`
 --
+DROP DATABASE IF EXISTS songfestivaldb;
+CREATE DATABASE IF NOT EXISTS `songfestivaldb` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+use `songfestivaldb`;
+
+CREATE USER IF NOT EXISTS 'root_songfestival'@'localhost' IDENTIFIED BY 'root_songfestival';
+GRANT ALL PRIVILEGES ON *.* TO 'root_songfestival'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+
 
 DROP TABLE IF EXISTS `liedjes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
