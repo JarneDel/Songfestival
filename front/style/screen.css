@@ -38,8 +38,10 @@ h2 {
 }
 
 .c-youtube-iframe{
-  width: 80vw;
+  width: 100vw;
   height: 80vh;
+  position: fixed;
+  left: 0;
 }
 .c-youtube{
   text-align: center;
@@ -202,9 +204,12 @@ html.c-app{
   top: 60%;
   left: 50%;
   transform: translate(-50%,-50%);
+  z-index: 21;
+  white-space: nowrap;
 }
 
 .u-position-center__high{
+  z-index: 1;
   position: absolute;
   top: 40%;
   left: 50%;
