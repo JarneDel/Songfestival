@@ -1,5 +1,7 @@
 # Startup Guide
 
+- Editors note: Het is niet responsive, want dat is echt physical pain om te doen. laat dat maar aan simon over
+
 ## Clone de repo
 
 Clone de repo naar VS Code en bekijk alle bestanden om een overzicht te krijgen van de verschillende backend en front-end bestanden.
